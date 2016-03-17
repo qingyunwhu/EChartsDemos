@@ -1,0 +1,170 @@
+<!--面积图反向数值轴-->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <title>a</title>
+    <style>
+        body {
+            background-color: #FFF
+        }
+    </style>
+</head>
+<body>
+<div id="main" style="height:600px;width: 100%; margin-left: 0px;float: left;"></div>
+<script src="echarts-2/build/dist/echarts.js"></script>
+<script src="http://libs.baidu.com/jquery/1.11.1/jquery.min.js"></script>
+<script type="text/javascript">
+    require.config({
+        paths: {
+            echarts:'echarts-2/build/dist'
+        }
+    });
+    require(
+            [
+                'echarts',
+                'echarts/chart/line',   // 按需加载所需图表，如需动态类型切换功能，别忘了同时加载相应图表
+                'echarts/chart/bar'
+            ],
+            function (ec) {
+                var myChart = ec.init(document.getElementById('main'));
+
+                $.getJSON("data/airdaily.json", function(json) {
+                        var option = {
+                            title: {
+                                text: '空气质量关系图',
+                                textStyle:{
+                                    fontSize: 20,
+//                                fontWeight: 'bolder',
+                                    color: '#000000'
+                                },
+                                subtext: 'daily',
+                                subtextStyle : {
+                                    color: '#000',
+                                    fontSize:15
+                                }
+                            },
+                            tooltip: {
+                                trigger: 'axis',
+                                formatter: function(params) {
+                                    return params[0].name + '<br/>'
+                                           + params[0].seriesName + ' : ' + -params[0].value + '<br/>'
+                                           + params[1].seriesName + ' : ' + params[1].value + '';
+                                }
+                            },
+                            legend: {
+                                data:['PM2.5','PM10'],
+                                textStyle : {
+                                    color: '#000'
+                                }
+                            },
+                            dataZoom: {
+                                show: true,
+                                start : 80,
+                                end : 100
+                            },
+                            toolbox: {
+                                show: true,
+                                feature: {
+                                    mark: {show: true},
+                                    dataView: {show: true, readOnly: false},
+                                    magicType: {show: true, type: ['line', 'bar']},
+                                    restore: {show: true},
+                                    saveAsImage: {show: true}
+                                }
+                            },
+                            calculable: true,
+                            xAxis: [
+                                {
+                                    type: 'category',
+                                    axisLabel:{
+                                        show:true,
+                                        textStyle : {
+                                            color: '#000'
+                                        }
+                                    },
+                                    boundaryGap: false,
+                                    data:(function(){
+                                        var data=[];
+                                        for(var i=0;i<json.length;i++){
+                                                data.push(json[i].date);
+                                        }
+                                        return data;
+                                    })()
+                                }
+                            ],
+                            yAxis: [
+                                {
+                                    name:'pm2.5',
+                                    type: 'value',
+                                    axisLabel: {
+                                        formatter: '{value}',
+                                        textStyle : {
+                                            color: '#000'
+                                        }
+                                    }
+                                },
+                                 {
+                                    name:'pm10',
+                                    type: 'value',
+                                    axisLabel : {
+                                        formatter: function (v) {
+                                            return -v;
+                                        }
+                                    }
+                                }
+                            ],
+                            series: [
+                                {
+                                    name: 'PM10',
+                                    type: 'line',
+                                    smooth:true,
+                                    yAxisIndex:1,
+                                    itemStyle:{
+                                        normal:{
+                                            color:'#2BD5D5',
+                                            areaStyle: {type: 'default'}
+                                        }
+                                    },
+                                    data:(function(){
+                                        var data=[];
+                                        for(var i=0;i<json.length;i++){
+                                            data.push(-json[i].PM10);
+                                        }
+                                        return data;
+                                    })()
+
+                                },
+                                {
+                                    name: 'PM2.5',
+                                    type: 'line',
+                                    smooth:true,
+                                    yAxisIndex:0,
+                                    itemStyle:{
+                                        normal:{
+                                            color:'#00FF00',
+                                            areaStyle: {type: 'default'}
+                                        }
+                                    },
+                                    data:(function(){
+                                        var data=[];
+                                        for(var i=0;i<json.length;i++){
+                                            data.push(json[i].PM25);
+                                        }
+                                        return data;
+                                    })()
+
+                                }
+                            ]
+                        };
+
+
+                        myChart.setOption(option);
+                });
+
+            }
+    );
+</script>
+
+</body>
+</html>

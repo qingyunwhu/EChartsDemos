@@ -1,0 +1,285 @@
+<!--折线图多级控制-->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <title>a</title>
+    <style>
+        body {
+            background-color: #FFF
+        }
+    </style>
+</head>
+<body>
+<div id="main" style="height:600px;width: 100%; margin-left: 0px;float: left;"></div>
+<script src="echarts-2/build/dist/echarts.js"></script>
+<script src="http://libs.baidu.com/jquery/1.11.1/jquery.min.js"></script>
+<script type="text/javascript">
+    require.config({
+        paths: {
+            echarts:'echarts-2/build/dist'
+        }
+    });
+    require(
+            [
+                'echarts',
+                'echarts/chart/line',   // 按需加载所需图表，如需动态类型切换功能，别忘了同时加载相应图表
+                'echarts/chart/bar'
+            ],
+            function (ec) {
+                var myChart = ec.init(document.getElementById('main'));
+
+                $.getJSON("data/airdaily.json", function(json) {
+                        var option = {
+                            title: {
+                                text: 'Air daily',
+                                textStyle:{
+                                    fontSize: 20,
+//                                fontWeight: 'bolder',
+                                    color: '#000000'
+                                },
+                                subtext: 'daily',
+                                subtextStyle : {
+                                    color: '#000',
+                                    fontSize:15
+                                }
+                            },
+                            tooltip: {
+                                trigger: 'axis'
+                            },
+                            legend: {
+                                data:['PM2.5','PM10','SO2','NO2','CO','O3'],
+                                selected: {
+                                    'CO' : false,
+                                    'O3' : false,
+                                    'PM10' : true,
+                                    'PM2.5' : true,
+                                    'NO2' : true
+                                },
+                                textStyle : {
+                                    color: '#000'
+                                }
+                            },
+                            dataZoom: {
+                                show: true,
+                                start : 80,
+                                end : 85
+                            },
+                            toolbox: {
+                                show: true,
+                                feature: {
+                                    mark: {show: true},
+                                    dataView: {show: true, readOnly: false},
+                                    magicType: {show: true, type: ['line', 'bar']},
+                                    restore: {show: true},
+                                    saveAsImage: {show: true}
+                                }
+                            },
+                            calculable: true,
+                            xAxis: [
+                                {
+                                    type: 'category',
+                                    axisLabel:{
+                                        show:true,
+                                        textStyle : {
+                                            color: '#000'
+                                        }
+                                    },
+                                    boundaryGap: false,
+                                    data:(function(){
+                                        var data=[];
+                                        for(var i=0;i<json.length;i++){
+                                                data.push(json[i].date);
+                                        }
+                                        return data;
+                                    })()
+                                }
+                            ],
+                            yAxis: [
+                                {
+                                    type: 'value',
+                                    axisLabel: {
+                                        formatter: '{value}',
+                                        textStyle : {
+                                            color: '#000'
+                                        }
+                                    }
+                                }
+                            ],
+                            series: [
+                                {
+                                    name: 'NO2',
+                                    type: 'line',
+                                    itemStyle: {
+                                        normal: {
+                                            lineStyle: {            // 系列级个性化折线样式，横向渐变描边
+                                                width: 2,
+                                                color: (function (){
+                                                    var zrColor = require('zrender/tool/color');
+                                                    return zrColor.getLinearGradient(
+                                                        0, 0, 1000, 0,
+                                                        [[0, 'rgba(255,0,0,0.8)'],[0.8, 'rgba(255,255,0,0.8)']]
+                                                    )
+                                                })(),
+                                                shadowColor : 'rgba(0,0,0,0.5)',
+                                                shadowBlur: 10,
+                                                shadowOffsetX: 8,
+                                                shadowOffsetY: 8
+                                            }
+                                        },
+                                         emphasis : {
+                                            label : {show: true}
+                                        }
+                                    },
+                                    data:(function(){
+                                        var data=[];
+                                        for(var i=0;i<json.length;i++){
+                                            data.push(json[i].NO2);
+                                        }
+                                        return data;
+                                    })()
+
+                                },
+                                {
+                                    name: 'CO',
+                                    type: 'line',
+                                    itemStyle:{
+                                        normal:{
+                                            color:'#EEEE11'
+                                        }
+                                    },
+                                    data:(function(){
+                                        var data=[];
+                                        for(var i=0;i<json.length;i++){
+                                            data.push(json[i].CO);
+                                        }
+                                        return data;
+                                    })()
+
+                                },
+                                {
+                                    name: 'O3',
+                                    type: 'line',
+                                    itemStyle:{
+                                        normal:{
+                                            color:'#573CC4'
+                                        }
+                                    },
+                                    data:(function(){
+                                        var data=[];
+                                        for(var i=0;i<json.length;i++){
+                                            data.push(json[i].O3);
+                                        }
+                                        return data;
+                                    })()
+
+                                },
+                                {
+                                    name: 'PM10',
+                                    type: 'line',
+                                    itemStyle:{
+                                        normal:{
+                                            color:'#2BD5D5'
+                                        }
+                                    },
+                                    data:(function(){
+                                        var data=[];
+                                        for(var i=0;i<json.length;i++){
+                                            if(i%15==0){
+                                                data.push({value:json[i].PM10,symbol:'emptypin',symbolSize:8})
+                                            }
+                                            else if(i%11==0) {
+                                                data.push({value:json[i].PM10,symbol: 'star',  // 数据级个性化拐点图形
+                                                    symbolSize : 15,
+                                                    itemStyle : { normal: {label : {
+                                                        show: true,
+                                                        textStyle : {
+                                                            fontSize : '20',
+                                                            fontFamily : '微软雅黑',
+                                                            fontWeight : 'bold'
+                                                        }
+                                                    }}}
+                                                })
+                                            }
+                                            else {
+                                                data.push(json[i].PM10);
+                                            }
+                                        }
+                                        return data;
+                                    })()
+
+                                },
+                                {
+                                    name: 'PM2.5',
+                                    type: 'line',
+                                    itemStyle:{
+                                        normal:{
+                                            color:'#00FF99'
+                                        }
+                                    },
+                                   stack: '总量',
+                                   symbol: 'none',
+                                   itemStyle: {
+                                        normal: {
+                                            areaStyle: {
+                                                // 区域图，纵向渐变填充
+                                                color : (function (){
+                                                    var zrColor = require('zrender/tool/color');
+                                                    return zrColor.getLinearGradient(
+                                                        0, 200, 0, 1000,
+                                                        [[0, 'rgba(255,0,0,0.8)'],[0.8, 'rgba(255,255,255,0.1)']]
+                                                    )
+                                                })()
+                                            }
+                                        }
+                                   },
+                                    data:(function(){
+                                        var data=[];
+                                        for(var i=0;i<json.length;i++){
+                                            if(i%7==0){
+                                                data.push({value:json[i].PM25,symbol:'droplet',symbolSize:5})
+                                            }else {
+                                                data.push(json[i].PM25);
+                                            }
+                                        }
+                                        return data;
+                                    })()
+
+                                },
+                                {
+                                    name: 'SO2',
+                                    type: 'line',
+                                    stack: '总量',
+                                    symbol: 'arrow',
+                                    symbolSize: 6,
+                                    symbolRotate: -45,
+                                    itemStyle: {
+                                        normal: {
+                                            color:'#FFcc99',
+                                            lineStyle: {
+                                                type: 'dashed'
+                                            }
+                                        }
+                                    },
+                                    data: (function () {
+                                        var data = [];
+                                        for (var i = 0; i < json.length; i++) {
+                                            data.push(json[i].SO2);
+                                        }
+                                        return data;
+                                    })()
+                                },
+
+                            ]
+                        };
+
+
+                        myChart.setOption(option);
+                });
+
+            }
+    );
+</script>
+
+</body>
+</html>

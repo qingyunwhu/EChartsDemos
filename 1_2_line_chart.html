@@ -1,0 +1,146 @@
+<!--堆积面积图-->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <title>a</title>
+    <style>
+        body {
+            background-color: #FFF
+        }
+    </style>
+</head>
+<body>
+<div id="main" style="height:500px;width: 100%; margin-left: 0px;float: left;"></div>
+<!-- ECharts单文件引入 -->
+<script src="echarts-2/build/dist/echarts.js"></script>
+<script src="http://libs.baidu.com/jquery/1.11.1/jquery.min.js"></script>
+<script type="text/javascript">
+    // 路径配置
+    require.config({
+        paths: {
+            echarts: 'echarts-2/build/dist'
+        }
+    });
+
+        // 使用
+    require(
+            [
+                'echarts',
+                'echarts/chart/bar', // 使用柱状图就加载bar模块，按需加载
+                'echarts/chart/line'
+            ],
+
+            function (ec) {
+                // 基于准备好的dom，初始化echarts图表
+                var myChart = ec.init(document.getElementById('main'));
+                var json;
+
+                $.getJSON("data/shanghai.json", function (datajson) {
+                    optionfun(datajson);
+                });
+                function optionfun(json){
+                    option = {
+                        title: {
+                            text: '上海市某日空气质量变化',
+                            subtext: '2016-3-17'
+                        },
+                        tooltip: {
+                            trigger: 'axis'
+                        },
+                        legend: {
+                            data: ['AQI','PM2.5','PM10']
+                        },
+                        toolbox: {
+                            show: true,
+                            feature: {
+                                mark: {show: true},
+                                dataView: {show: true, readOnly: false},
+                                magicType: {show: true, type: ['line', 'bar']},
+                                restore: {show: true},
+                                saveAsImage: {show: true}
+                            }
+                        },
+                        calculable: true,
+                        xAxis: [
+                            {
+                                type: 'category',
+                                boundaryGap: false,
+                                data: (function(){
+                                        var data=[];
+                                        for(var i=0;i<json.length;i++){
+                                            if(json[i].position_name==null){
+                                                json[i].position_name = 'undefined'
+                                            }
+                                            data.push(json[i].position_name);
+//                                            console.log(json[i].position_name);
+                                        }
+                                        return data;
+                                })()
+                            }
+                        ],
+                        yAxis: [
+                            {
+                                type: 'value',
+                                axisLabel: {
+                                    formatter: '{value} ug/cm3'
+                                }
+                            }
+                        ],
+                        series: [
+                            {
+                                name: 'AQI',
+                                type: 'line',
+                                stack: '总量',
+                                itemStyle: {normal: {areaStyle: {type: 'default'}}},
+                                data: (function(){
+                                        var data=[];
+                                        for(var i=0;i<json.length;i++){
+                                            data.push(json[i].aqi);
+//                                            console.log(json[i].aqi);
+                                        }
+                                        return data;
+                                })()
+                            },
+                            {
+                                name: 'PM2.5',
+                                type: 'line',
+                                stack: '总量',
+                                itemStyle: {normal: {areaStyle: {type: 'default'}}},
+                                data: (function(){
+                                        var data=[];
+                                        for(var i=0;i<json.length;i++){
+                                            data.push(json[i].pm2_5);
+//                                            console.log(json[i].pm2_5);
+                                        }
+                                        return data;
+                                })()
+                            },
+
+                            {
+                                name: 'PM10',
+                                type: 'line',
+                                stack: '总量',
+                                itemStyle: {normal: {areaStyle: {type: 'default'}}},
+                                data: (function(){
+                                        var data=[];
+                                        for(var i=0;i<json.length;i++){
+                                            data.push(json[i].pm10);
+//                                            console.log(json[i].pm10);
+                                        }
+                                        return data;
+                                })()
+                            }
+
+                        ]
+                    };
+
+                    // 为echarts对象加载数据
+                    myChart.setOption(option);
+                }
+
+            }
+    );
+</script>
+</body>
+</html>
