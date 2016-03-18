@@ -1,4 +1,4 @@
-<!--标准折线图-->
+<!--标准柱状图-->
 <!DOCTYPE html>
 <html>
 <head>
@@ -34,21 +34,22 @@
             function (ec) {
                 // 基于准备好的dom，初始化echarts图表
                 var myChart = ec.init(document.getElementById('main'));
+                var json;
 
-                $.getJSON("data/shanghai.json", function (datajson) {
+                $.getJSON("data/airdaily.json", function (datajson) {
                     optionfun(datajson);
                 });
                 function optionfun(json){
                     option = {
                         title: {
-                            text: '上海市某日空气质量变化',
-                            subtext: '2016-3-17'
+                            text: '空气质量变化',
+                            subtext: 'airquality'
                         },
                         tooltip: {
                             trigger: 'axis'
                         },
                         legend: {
-                            data: ['AQI','PM2.5','PM10']
+                            data: ['PM2.5','PM10']
                         },
                         toolbox: {
                             show: true,
@@ -64,14 +65,11 @@
                         xAxis: [
                             {
                                 type: 'category',
-                                boundaryGap: false,
+                                boundaryGap: true,
                                 data: (function(){
                                         var data=[];
-                                        for(var i=0;i<json.length;i++){
-                                            if(json[i].position_name==null){
-                                                json[i].position_name = 'undefined'
-                                            }
-                                            data.push(json[i].position_name);
+                                        for(var i=0;i<10;i++){
+                                            data.push(json[i].date);
                                         }
                                         return data;
                                 })()
@@ -87,40 +85,19 @@
                         ],
                         series: [
                             {
-                                name: 'AQI',
-                                type: 'line',
-                                data: (function(){
-                                        var data=[];
-                                        for(var i=0;i<json.length;i++){
-                                            data.push(json[i].aqi);
-                                        }
-                                        return data;
-                                })(),
-                                markPoint: {
-                                    data: [
-                                        {type: 'max', name: '最大值'},
-                                        {type: 'min', name: '最小值'}
-                                    ]
-                                },
-                                markLine: {
-                                    data: [
-                                        {type: 'average', name: '平均值'}
-                                    ]
-                                }
-                            },
-                            {
                                 name: 'PM2.5',
-                                type: 'line',
+                                type: 'bar',
                                 data: (function(){
                                         var data=[];
-                                        for(var i=0;i<json.length;i++){
-                                            data.push(json[i].pm2_5);
+                                        for(var i=0;i<10;i++){
+                                            data.push(Number(json[i].PM25));//注意json数据值形式为string，否则会导致average无法计算
                                         }
                                         return data;
                                 })(),
-                                markPoint: {
-                                    data: [
-                                        {name: '最低', value: 21, xAxis: 1, yAxis: 21}
+                                 markPoint : {
+                                    data : [
+                                        {type : 'max', name: '最大值'},
+                                        {type : 'min', name: '最小值'}
                                     ]
                                 },
                                 markLine: {
@@ -132,26 +109,26 @@
 
                             {
                                 name: 'PM10',
-                                type: 'line',
+                                type: 'bar',
                                 data: (function(){
                                         var data=[];
-                                        for(var i=0;i<json.length;i++){
-                                            data.push(json[i].pm10);
-                                            console.log(json[i].pm10);
+                                        for(var i=0;i<10;i++){
+                                            data.push(Number(json[i].PM10));
                                         }
                                         return data;
                                 })(),
-                                markPoint: {
-                                    data: [
-                                        {type: 'max', name: '最大值'},
-                                        {type: 'min', name: '最小值'}
-                                    ]
-                                },
                                 markLine: {
                                     data: [
                                         {type: 'average', name: '平均值'}
                                     ]
+                                },
+                                 markPoint : {
+                                    data : [
+                                        {type : 'max', name: '最大值'},
+                                        {type : 'min', name: '最小值'}
+                                    ]
                                 }
+
                             }
 
                         ]
@@ -165,3 +142,4 @@
     );
 </script>
 </body>
+</html>
