@@ -1,0 +1,170 @@
+<!--温度计式图表-->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <title>a</title>
+    <style>
+        body {
+            background-color: #FFF
+        }
+    </style>
+</head>
+<body>
+<div id="main" style="height:500px;width: 100%; margin-left: 0px;float: left;"></div>
+<!-- ECharts单文件引入 -->
+<script src="echarts-2/build/dist/echarts.js"></script>
+<script src="http://libs.baidu.com/jquery/1.11.1/jquery.min.js"></script>
+<script type="text/javascript">
+    // 路径配置
+    require.config({
+        paths: {
+            echarts: 'echarts-2/build/dist'
+        }
+    });
+
+        // 使用
+    require(
+            [
+                'echarts',
+                'echarts/chart/bar', // 使用柱状图就加载bar模块，按需加载
+                'echarts/chart/line'
+            ],
+
+            function (ec) {
+                // 基于准备好的dom，初始化echarts图表
+                var myChart = ec.init(document.getElementById('main'));
+                var json;
+
+                $.getJSON("data/airdaily.json", function (datajson) {
+                    optionfun(datajson);
+                });
+                function optionfun(json){
+                    option = {
+                        title: {
+                            text: '空气质量变化',
+                            subtext: 'airquality'
+                        },
+                        tooltip: {
+                            trigger: 'axis',
+                            axisPointer : {            // 坐标轴指示器，坐标轴触发有效
+                                type : 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
+                            }
+                        },
+                        legend: {
+                            data: ['CO','O3'],
+                        },
+                        toolbox: {
+                            show : true,
+                            orient: 'vertical',
+                            x: 'right',
+                            y: 'center',
+                            feature : {
+                                mark : {show: true},
+                                dataView : {show: true, readOnly: false},
+                                magicType : {show: true, type: ['line', 'bar', 'stack', 'tiled']},
+                                restore : {show: true},
+                                saveAsImage : {show: true}
+                            }
+                        },
+                        calculable: true,
+                        xAxis: [
+                            {
+                                type: 'category',
+                                boundaryGap: true,
+                                data: (function(){
+                                        var data=[];
+                                        for(var i=0;i<10;i++){
+                                            data.push(json[i].date);
+                                        }
+                                        return data;
+                                })()
+                            }
+                        ],
+                        yAxis: [
+                            {
+                                type: 'value',
+                                axisLabel: {
+                                    formatter: '{value} ug/cm3'
+                                }
+                            }
+                        ],
+                        series: [
+
+                            {
+                                name: 'CO',
+                                type: 'bar',
+                                stack: 'sum',
+                                barCategoryGap: '50%',
+                                itemStyle: {
+                                    normal: {
+                                        color: 'tomato',
+                                        barBorderColor: 'tomato',
+                                        barBorderWidth: 6,
+                                        barBorderRadius:0,
+                                        label : {
+                                            show: true,
+                                            position: 'insideTop'
+
+                                        }
+                                    }
+                                },
+                                data: (function(){
+                                        var data=[];
+                                        for(var i=0;i<10;i++){
+                                            data.push(Number(json[i].CO));
+                                        }
+                                        return data;
+                                })()
+
+                            },
+
+                            {
+                                name: 'O3',
+                                type: 'bar',
+                                stack: 'sum',
+                                itemStyle: {
+                                    normal: {
+                                        color: '#fff',
+                                        barBorderColor: 'tomato',
+                                        barBorderWidth: 6,
+                                        barBorderRadius:0,
+                                        label : {
+                                            show: true,
+                                            position: 'top',
+                                            formatter: function (params) {
+                                                for (var i = 0, l = option.xAxis[0].data.length; i < l; i++) {
+                                                    if (option.xAxis[0].data[i] == params.name) {
+                                                        return Number(option.series[0].data[i] + params.value).toFixed(3);
+                                                    }
+                                                }
+                                            },
+                                            textStyle: {
+                                                color: 'tomato'
+                                            }
+                                        }
+                                    }
+                                },
+                                data: (function(){
+                                        var data=[];
+                                        for(var i=0;i<10;i++){
+                                            data.push(Number(json[i].O3)*5);
+                                        }
+                                        return data;
+                                })()
+
+                            },
+
+
+                        ]
+                    };
+
+                    // 为echarts对象加载数据
+                    myChart.setOption(option);
+                }
+
+            }
+    );
+</script>
+</body>
+</html>
