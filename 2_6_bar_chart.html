@@ -1,0 +1,203 @@
+<!--多系列层叠-->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <title>a</title>
+    <style>
+        body {
+            background-color: #FFF
+        }
+    </style>
+</head>
+<body>
+<div id="main" style="height:500px;width: 100%; margin-left: 0px;float: left;"></div>
+<!-- ECharts单文件引入 -->
+<script src="echarts-2/build/dist/echarts.js"></script>
+<script src="http://libs.baidu.com/jquery/1.11.1/jquery.min.js"></script>
+<script type="text/javascript">
+    // 路径配置
+    require.config({
+        paths: {
+            echarts: 'echarts-2/build/dist'
+        }
+    });
+
+        // 使用
+    require(
+            [
+                'echarts',
+                'echarts/chart/bar', // 使用柱状图就加载bar模块，按需加载
+                'echarts/chart/line'
+            ],
+
+            function (ec) {
+                // 基于准备好的dom，初始化echarts图表
+                var myChart = ec.init(document.getElementById('main'));
+                var json;
+
+                $.getJSON("data/airdaily.json", function (datajson) {
+                    optionfun(datajson);
+                });
+                function optionfun(json){
+                    option = {
+                        title: {
+                            text: '空气质量变化',
+                            subtext: 'airquality'
+                        },
+                        tooltip: {
+                            trigger: 'axis',
+                            axisPointer : {            // 坐标轴指示器，坐标轴触发有效
+                                type : 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
+                            }
+                        },
+                        legend: {
+                            data: ['CO','SO2','NO2','','O3','PM2.5','PM10']
+                        },
+                        toolbox: {
+                            show : true,
+                            orient: 'vertical',
+                            x: 'right',
+                            y: 'center',
+                            feature : {
+                                mark : {show: true},
+                                dataView : {show: true, readOnly: false},
+                                magicType : {show: true, type: ['line', 'bar', 'stack', 'tiled']},
+                                restore : {show: true},
+                                saveAsImage : {show: true}
+                            }
+                        },
+                        calculable: true,
+                        xAxis: [
+                            {
+                                type: 'category',
+                                boundaryGap: true,
+                                data: (function(){
+                                        var data=[];
+                                        for(var i=0;i<5;i++){
+                                            data.push(json[i].date);
+                                        }
+                                        return data;
+                                })()
+                            },
+                            {
+                                type : 'category',
+                                axisLine: {show:false},
+                                axisTick: {show:false},
+                                axisLabel: {show:false},
+                                splitArea: {show:false},
+                                splitLine: {show:false},
+                                data: (function(){
+                                        var data=[];
+                                        for(var i=0;i<5;i++){
+                                            data.push(json[i].date);
+                                        }
+                                        return data;
+                                })()
+                            }
+                        ],
+                        yAxis: [
+                            {
+                                type: 'value',
+                                axisLabel: {
+                                    formatter: '{value} ug/cm3'
+                                }
+                            }
+                        ],
+                        series: [
+                            {
+                                name: 'O3',
+                                type: 'bar',
+                                itemStyle: {normal: {barBorderRadius:[10, 10, 10, 10],color:'rgba(193,35,43,1)', label:{show:true}}},
+                                data: (function(){
+                                        var data=[];
+                                        for(var i=0;i<5;i++){
+                                            data.push(Number(json[i].O3));
+                                        }
+                                        return data;
+                                })()
+
+                            },
+
+                            {
+                                name: 'PM2.5',
+                                type: 'bar',
+                                itemStyle: {normal: {color:'rgba(181,195,52,1)', label:{show:true,textStyle:{color:'#27727B'}}}},
+                                data: (function(){
+                                        var data=[];
+                                        for(var i=0;i<5;i++){
+                                            data.push(Number(json[i].PM25));//注意json数据值形式为string，否则会导致average无法计算
+                                        }
+                                        return data;
+                                })()
+                            },
+
+                            {
+                                name: 'PM10',
+                                type: 'bar',
+                                itemStyle: {normal: {color:'rgba(252,206,16,1)', label:{show:true,textStyle:{color:'#E87C25'}}}},
+                                data: (function(){
+                                        var data=[];
+                                        for(var i=0;i<5;i++){
+                                            data.push(Number(json[i].PM10));
+                                        }
+                                        return data;
+                                })()
+
+                            },
+                            {
+                                name: 'CO',
+                                type: 'bar',
+                                xAxisIndex:1,
+                                itemStyle: {normal: {barBorderRadius:[10, 10, 10, 10],color:'rgba(193,35,43,0.5)', label:{show:true,formatter:function(p){return p.value > 0 ? (p.value +'\n'):'';}}}},
+                                data: (function(){
+                                        var data=[];
+                                        for(var i=0;i<5;i++){
+                                            data.push(Number(json[i].CO));
+                                        }
+                                        return data;
+                                })()
+
+                            },
+                            {
+                                name: 'SO2',
+                                type: 'bar',
+                                xAxisIndex:1,
+                                itemStyle: {normal: {color:'rgba(181,195,52,0.5)', label:{show:true}}},
+                                data: (function(){
+                                        var data=[];
+                                        for(var i=0;i<5;i++){
+                                            data.push(Number(json[i].SO2));
+                                        }
+                                        return data;
+                                })()
+
+                            },
+                            {
+                                name: 'NO2',
+                                type: 'bar',
+                                xAxisIndex:1,
+                                itemStyle: {normal: {color:'rgba(252,206,16,0.5)', label:{show:true,formatter:function(p){return p.value > 0 ? (p.value +'+'):'';}}}},
+                                data: (function(){
+                                        var data=[];
+                                        for(var i=0;i<5;i++){
+                                            data.push(Number(json[i].NO2));
+                                        }
+                                        return data;
+                                })()
+
+                            }
+
+
+                        ]
+                    };
+
+                    // 为echarts对象加载数据
+                    myChart.setOption(option);
+                }
+
+            }
+    );
+</script>
+</body>
+</html>
